@@ -1,0 +1,181 @@
+openapi: 3.0.3
+info:
+  title: Receipt API
+  version: 0.0.0
+  description: Dukka Test Project
+paths:
+  /api/login/:
+    post:
+      operationId: login_create
+      tags:
+        - login
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AuthToken'
+        required: true
+      
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AuthToken'
+          description: ''
+  /api/receipt/create/:
+    post:
+      operationId: receipt_create_create
+      description: Return a task id of created task.
+      tags:
+        - receipt
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Receipt'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/Receipt'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/Receipt'
+        required: true
+      security:
+        - tokenAuth: [ ]
+      responses:
+        '200':
+          description: No response body
+  /api/receipt/detail/{task_id}/:
+    get:
+      operationId: receipt_detail_retrieve
+      description: |-
+        View to create task that genereate 10 different pdf copies  of the receipt.
+        * Requires token authentication.
+        * Only admin users are able to access this view.
+      parameters:
+        - in: path
+          name: task_id
+          schema:
+            type: string
+            pattern: ^[\w-]+$
+          required: true
+      tags:
+        - receipt
+      security:
+        - tokenAuth: [ ]
+      responses:
+        '200':
+          description: No response body
+  /api/users/:
+    get:
+      operationId: users_list
+      tags:
+        - users
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/User'
+          description: ''
+    post:
+      operationId: users_create
+      tags:
+        - users
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/User'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/User'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/User'
+        required: true
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+          description: ''
+components:
+  schemas:
+    AuthToken:
+      type: object
+      properties:
+        username:
+          type: string
+          writeOnly: true
+        password:
+          type: string
+          writeOnly: true
+        token:
+          type: string
+          readOnly: true
+      required:
+        - password
+        - token
+        - username
+    Receipt:
+      type: object
+      properties:
+        name:
+          type: string
+        address:
+          type: string
+        phone_number:
+          type: string
+        total_amount:
+          type: number
+          format: float
+      required:
+        - address
+        - name
+        - phone_number
+        - total_amount
+    User:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        username:
+          type: string
+          description: Required. 150 characters or fewer. Letters, digits and @/./+/-/_
+            only.
+          pattern: ^[\w.@+-]+$
+          maxLength: 150
+        first_name:
+          type: string
+          maxLength: 150
+        last_name:
+          type: string
+          maxLength: 150
+        email:
+          type: string
+          format: email
+          maxLength: 50
+        password:
+          type: string
+          writeOnly: true
+          maxLength: 255
+        is_staff:
+          type: boolean
+          title: Staff status
+          description: Designates whether the user can log into this admin site.
+      required:
+        - email
+        - id
+        - username
+  securitySchemes:
+    tokenAuth:
+      type: apiKey
+      in: header
+      name: Authorization
+      description: Token-based authentication with required prefix "Token"
